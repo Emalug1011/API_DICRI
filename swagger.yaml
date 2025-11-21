@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: API DICRI - Evidencias
+  version: 1.0.0
+paths:
+  /api/v1/expedientes:
+    post:
+      summary: Crear expediente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                codigo_expediente: { type: string }
+                descripcion: { type: string }
+      responses:
+        '201': { description: Created }
+  /api/v1/expedientes/{id}/indicios:
+    post:
+      summary: Agregar indicio
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                descripcion: { type: string }
+                color: { type: string }
+                tamano: { type: string }
+                peso: { type: string }
+                ubicacion: { type: string }
+      responses:
+        '201': { description: Created }
+  /api/v1/expedientes/{id}/estado:
+    put:
+      summary: Cambiar estado
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_estado_nuevo: { type: integer }
+                comentario: { type: string }
+      responses:
+        '200': { description: OK }

@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sql2019_dicri
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Segura2025!
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    networks:
+      - dicri_net
+
+  backend:
+    build: .
+    container_name: dicri_backend
+    depends_on:
+      - sqlserver
+    environment:
+      - DB_HOST=sqlserver
+      - DB_USER=sa
+      - DB_PASS=Segura2025!
+      - DB_NAME=bd_dicri_evidencias
+      - DB_PORT=1433
+      - JWT_SECRET=una_clave_secreta
+    ports:
+      - "3000:3000"
+    networks:
+      - dicri_net
+
+volumes:
+  mssql-data:
+
+networks:
+  dicri_net:
+    driver: bridge
