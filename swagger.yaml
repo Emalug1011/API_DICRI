@@ -9,9 +9,6 @@ servers:
   - url: http://localhost:3000/api
     description: Servidor local de desarrollo
 
-# ======================================================
-# 🔐 SEGURIDAD GLOBAL
-# ======================================================
 security:
   - bearerAuth: []
 
@@ -23,6 +20,8 @@ components:
       bearerFormat: JWT
 
 paths:
+  # ================= EXPEDIENTES =================
+
   /v1/expedientes:
     post:
       summary: Crear expediente
@@ -42,42 +41,59 @@ paths:
                   type: string
                 descripcion:
                   type: string
+            example:
+              codigo_expediente: "DICRI-2025-0001"
+              descripcion: "Robo en local comercial"
       responses:
         '201':
           description: Expediente creado
-
-  /v1/expedientes/{id}/indicios:
-    post:
-      summary: Agregar indicio a un expediente
+    get:
+      summary: Listar expedientes
       tags:
-        - Indicios
+        - Expedientes
+      parameters:
+        - in: query
+          name: estado
+          schema:
+            type: integer
+          required: false
+          description: Id del estado del expediente
+        - in: query
+          name: fecha_inicio
+          schema:
+            type: string
+            format: date
+          required: false
+        - in: query
+          name: fecha_fin
+          schema:
+            type: string
+            format: date
+          required: false
+      responses:
+        '200':
+          description: Lista de expedientes
+
+  /v1/expedientes/{id}:
+    get:
+      summary: Obtener expediente completo (datos, indicios, historial)
+      tags:
+        - Expedientes
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - descripcion
-              properties:
-                descripcion: { type: string }
-                color: { type: string }
-                tamano: { type: string }
-                peso: { type: string }
-                ubicacion: { type: string }
       responses:
-        '201':
-          description: Indicio creado
+        '200':
+          description: Expediente encontrado
+        '404':
+          description: Expediente no encontrado
 
   /v1/expedientes/{id}/estado:
     put:
-      summary: Cambiar estado del expediente
+      summary: Cambiar estado del expediente (revisión / aprobación / rechazo)
       tags:
         - Expedientes
       parameters:
@@ -97,15 +113,68 @@ paths:
               properties:
                 id_estado_nuevo:
                   type: integer
+                  description: >
+                    Estado destino (ej: 2=En Revisión, 3=Aprobado, 4=Rechazado).
                 comentario:
                   type: string
+                  description: Obligatorio si el estado es Rechazado.
+            example:
+              id_estado_nuevo: 4
+              comentario: "Información incompleta en los indicios."
       responses:
         '200':
           description: Estado actualizado
+        '400':
+          description: Flujo no permitido o falta justificación
+
+  # ================= INDICIOS =================
+
+  /v1/expedientes/{id}/indicios:
+    post:
+      summary: Agregar indicio a un expediente
+      tags:
+        - Indicios
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Id del expediente al que pertenece el indicio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - descripcion
+              properties:
+                descripcion:
+                  type: string
+                color:
+                  type: string
+                tamano:
+                  type: string
+                peso:
+                  type: string
+                ubicacion:
+                  type: string
+            example:
+              descripcion: "Cuchillo con manchas"
+              color: "Plateado"
+              tamano: "20cm"
+              peso: "200g"
+              ubicacion: "Escena del crimen - cocina"
+      responses:
+        '201':
+          description: Indicio creado
+
+  # ================= AUTENTICACIÓN =================
 
   /v1/auth/login:
     post:
-      security: []  # ESTA RUTA ES PUBLICA
+      security: []  # pública
       summary: Login de usuario
       tags:
         - Autenticación
@@ -120,11 +189,16 @@ paths:
                   type: string
                 contrasenia:
                   type: string
+            example:
+              usuario: "emalug"
+              contrasenia: "MiPassword123!"
       responses:
         '200':
           description: Login exitoso
         '401':
           description: Credenciales inválidas
+
+  # ================= USUARIOS =================
 
   /v1/usuarios:
     post:
@@ -151,6 +225,11 @@ paths:
                   type: string
                 id_rol:
                   type: integer
+            example:
+              nombre_completo: "Juan Pérez"
+              usuario: "juanp"
+              contrasenia: "MiPassword123!"
+              id_rol: 1
       responses:
         '201':
           description: Usuario creado
@@ -203,6 +282,10 @@ paths:
                   type: string
                 id_rol:
                   type: integer
+            example:
+              nombre_completo: "Juan Pérez Actualizado"
+              usuario: "juanp"
+              id_rol: 2
       responses:
         '200':
           description: Usuario actualizado
@@ -229,6 +312,8 @@ paths:
               properties:
                 nueva_contrasenia:
                   type: string
+            example:
+              nueva_contrasenia: "NuevaPassword2025!"
       responses:
         '200':
           description: Contraseña actualizada
