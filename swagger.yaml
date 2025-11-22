@@ -1,28 +1,47 @@
 openapi: 3.0.3
+
 info:
-  title: API DICRI - Evidencias
-  version: 1.0.0
+  title: API DICRI - Gestión de Evidencias
+  version: "1.0.0"
+  description: API para gestionar expedientes, indicios y flujos de aprobación.
+
+servers:
+  - url: http://localhost:3000/api
+    description: Servidor local de desarrollo
+
 paths:
-  /api/v1/expedientes:
+  /v1/expedientes:
     post:
       summary: Crear expediente
+      tags:
+        - Expedientes
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - codigo_expediente
+                - descripcion
               properties:
-                codigo_expediente: { type: string }
-                descripcion: { type: string }
+                codigo_expediente:
+                  type: string
+                descripcion:
+                  type: string
       responses:
-        '201': { description: Created }
-  /api/v1/expedientes/{id}/indicios:
+        '201':
+          description: Expediente creado
+
+  /v1/expedientes/{id}/indicios:
     post:
-      summary: Agregar indicio
+      summary: Agregar indicio a un expediente
+      tags:
+        - Indicios
       parameters:
         - in: path
           name: id
+          required: true
           schema:
             type: integer
       requestBody:
@@ -31,6 +50,8 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - descripcion
               properties:
                 descripcion: { type: string }
                 color: { type: string }
@@ -38,13 +59,18 @@ paths:
                 peso: { type: string }
                 ubicacion: { type: string }
       responses:
-        '201': { description: Created }
-  /api/v1/expedientes/{id}/estado:
+        '201':
+          description: Indicio creado
+
+  /v1/expedientes/{id}/estado:
     put:
-      summary: Cambiar estado
+      summary: Cambiar estado del expediente
+      tags:
+        - Expedientes
       parameters:
         - in: path
           name: id
+          required: true
           schema:
             type: integer
       requestBody:
@@ -53,8 +79,13 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - id_estado_nuevo
               properties:
-                id_estado_nuevo: { type: integer }
-                comentario: { type: string }
+                id_estado_nuevo:
+                  type: integer
+                comentario:
+                  type: string
       responses:
-        '200': { description: OK }
+        '200':
+          description: Estado actualizado

@@ -1,3 +1,8 @@
-const app = require('./app');
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server running on port ${port}`));
+import app from "./app.js";
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(` Servidor corriendo en http://localhost:${PORT}`);
+    console.log(` Swagger UI: http://localhost:${PORT}/api-docs`);
+});

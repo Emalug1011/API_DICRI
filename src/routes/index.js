@@ -1,10 +1,11 @@
-const express = require('express');
-const router = express.Router();
-const expedientes = require('../controllers/expedientes.controller');
-const indicios = require('../controllers/indicios.controller');
+import { Router } from "express";
+import * as expedientes from "../controllers/expedientes.controller.js";
+import * as indicios from "../controllers/indicios.controller.js";
 
-router.post('/expedientes', expedientes.crearExpediente);
-router.post('/expedientes/:id/indicios', indicios.crearIndicio);
-router.put('/expedientes/:id/estado', expedientes.cambiarEstado);
+const router = Router();
 
-module.exports = router;
+router.post("/expedientes", expedientes.crearExpediente);
+router.post("/expedientes/:id/indicios", indicios.crearIndicio);
+router.put("/expedientes/:id/estado", expedientes.cambiarEstado);
+
+export default router;
