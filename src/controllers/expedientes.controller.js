@@ -1,10 +1,12 @@
 import sql from "mssql";
 import { poolPromise } from "../services/db.service.js";
+import { writeLog } from "../utils/googleLogger.js";
+import { warn } from "../middleware/warn.js";
 
 /* ============================================================
    1. Crear expediente
    ============================================================ */
-export const crearExpediente = async (req, res) => {
+export const crearExpediente = async (req, res, next) => {
   try {
     const { codigo_expediente, descripcion } = req.body;
     const id_usuario = req.usuario.id_usuario; // del token
@@ -18,13 +20,19 @@ export const crearExpediente = async (req, res) => {
       .output("nuevo_id", sql.Int)
       .execute("SP_CrearExpediente");
 
+    writeLog("INFO", "Expediente creado exitosamente", {
+      id_expediente: result.output.nuevo_id,
+      usuario: id_usuario
+    });
+
     res.status(201).json({
       message: "Expediente creado",
       id_expediente: result.output.nuevo_id
     });
 
   } catch (error) {
-    console.error("Error crearExpediente:", error);
+    next(error);
+   // console.error("Error crearExpediente:", error);
     res.status(500).json({ message: "Error al crear expediente", error: error.message });
   }
 };
@@ -32,7 +40,7 @@ export const crearExpediente = async (req, res) => {
 /* ============================================================
    2. Cambiar estado del expediente (Revisión, Aprobación, Rechazo)
    ============================================================ */
-export const cambiarEstado = async (req, res) => {
+export const cambiarEstado = async (req, res, next) => {
   try {
     const id_expediente = parseInt(req.params.id);
     const { id_estado_nuevo, comentario } = req.body;
@@ -50,6 +58,7 @@ export const cambiarEstado = async (req, res) => {
     res.status(200).json({ message: "Estado actualizado con éxito" });
 
   } catch (error) {
+    next(error);
     console.error("Error cambiarEstado:", error);
     res.status(400).json({ message: error.message });
   }
@@ -58,7 +67,7 @@ export const cambiarEstado = async (req, res) => {
 /* ============================================================
    3. Obtener expediente completo (expediente + indicios + historial)
    ============================================================ */
-export const obtenerExpediente = async (req, res) => {
+export const obtenerExpediente = async (req, res, next) => {
   try {
     const id_expediente = parseInt(req.params.id);
     const pool = await poolPromise;
@@ -74,6 +83,7 @@ export const obtenerExpediente = async (req, res) => {
     });
 
   } catch (error) {
+    next(error);
     console.error("Error obtenerExpediente:", error);
     res.status(500).json({ message: "Error al obtener expediente", error: error.message });
   }
@@ -82,7 +92,7 @@ export const obtenerExpediente = async (req, res) => {
 /* ============================================================
    4. Listar expedientes (filtros por estado y fechas)
    ============================================================ */
-export const listarExpedientes = async (req, res) => {
+export const listarExpedientes = async (req, res, next) => {
   try {
     const { estado, fecha_inicio, fecha_fin } = req.query;
 
@@ -97,6 +107,7 @@ export const listarExpedientes = async (req, res) => {
     res.status(200).json(result.recordset);
 
   } catch (error) {
+    next(error);
     console.error("Error listarExpedientes:", error);
     res.status(500).json({ message: "Error al consultar expedientes", error: error.message });
   }
