@@ -1,11 +1,12 @@
 import { Router } from "express";
-import * as expedientes from "../controllers/expedientes.controller.js";
-import * as indicios from "../controllers/indicios.controller.js";
+
+import authRoutes from "./auth.routes.js";
+import usuariosRoutes from "./usuarios.routes.js";
 
 const router = Router();
 
-router.post("/expedientes", expedientes.crearExpediente);
-router.post("/expedientes/:id/indicios", indicios.crearIndicio);
-router.put("/expedientes/:id/estado", expedientes.cambiarEstado);
+router.use("/auth", authRoutes);
+router.use("/usuarios", usuariosRoutes);
+ 
 
 export default router;
