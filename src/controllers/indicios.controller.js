@@ -1,10 +1,11 @@
 import sql from "mssql";
 import { poolPromise } from "../services/db.service.js";
+import { writeLog } from "../utils/googleLogger.js";
 
 /* ============================================================
    Crear indicio dentro de un expediente
    ============================================================ */
-export const crearIndicio = async (req, res) => {
+export const crearIndicio = async (req, res, next) => {
   try {
     const id_expediente = parseInt(req.params.id);
     const { descripcion, color, tamano, peso, ubicacion } = req.body;
@@ -23,13 +24,20 @@ export const crearIndicio = async (req, res) => {
       .output("nuevo_id", sql.Int)
       .execute("SP_CrearIndicio");
 
-    res.status(201).json({
+    // Log exitoso
+    writeLog("INFO", "Indicio creado exitosamente", {
+      id_indicio: result.output.nuevo_id,
+      id_expediente,
+      id_usuario
+    });
+
+    return res.status(201).json({
       message: "Indicio registrado",
       id_indicio: result.output.nuevo_id
     });
 
-  } catch (error) {
-    console.error("Error crearIndicio:", error);
-    res.status(500).json({ message: "Error al crear indicio", error: error.message });
+  } catch (error) {    
+    //console.error("Error crearIndicio:", error);
+    return next(error); 
   }
 };

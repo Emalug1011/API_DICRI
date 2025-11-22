@@ -3,12 +3,15 @@ import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import routes from "./routes/index.js";
+import { googleRequestLogger } from "./middleware/googleLogging.middleware.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(googleRequestLogger);
 
 // Cargar Swagger (archivo está en la raíz del proyecto)
 const swaggerDocument = YAML.load("swagger.yaml");
@@ -23,5 +26,8 @@ app.get("/ping", (req, res) => {
 
 // Registrar rutas del proyecto (todas bajo /api)
 app.use("/api/v1", routes);
+
+// Middleware final para manejar errores
+app.use(errorHandler);
 
 export default app;
