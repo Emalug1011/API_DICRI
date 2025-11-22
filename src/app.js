@@ -22,6 +22,6 @@ app.get("/ping", (req, res) => {
 });
 
 // Registrar rutas del proyecto (todas bajo /api)
-app.use("/api", routes);
+app.use("/api/v1", routes);
 
 export default app;

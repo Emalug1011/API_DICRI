@@ -9,6 +9,19 @@ servers:
   - url: http://localhost:3000/api
     description: Servidor local de desarrollo
 
+# ======================================================
+# 🔐 SEGURIDAD GLOBAL
+# ======================================================
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
 paths:
   /v1/expedientes:
     post:
@@ -89,3 +102,133 @@ paths:
       responses:
         '200':
           description: Estado actualizado
+
+  /v1/auth/login:
+    post:
+      security: []  # ESTA RUTA ES PUBLICA
+      summary: Login de usuario
+      tags:
+        - Autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usuario:
+                  type: string
+                contrasenia:
+                  type: string
+      responses:
+        '200':
+          description: Login exitoso
+        '401':
+          description: Credenciales inválidas
+
+  /v1/usuarios:
+    post:
+      summary: Crear un nuevo usuario
+      tags:
+        - Usuarios
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre_completo
+                - usuario
+                - contrasenia
+                - id_rol
+              properties:
+                nombre_completo:
+                  type: string
+                usuario:
+                  type: string
+                contrasenia:
+                  type: string
+                id_rol:
+                  type: integer
+      responses:
+        '201':
+          description: Usuario creado
+
+    get:
+      summary: Obtener todos los usuarios
+      tags:
+        - Usuarios
+      responses:
+        '200':
+          description: Lista de usuarios
+
+  /v1/usuarios/{id}:
+    get:
+      summary: Obtener un usuario por ID
+      tags:
+        - Usuarios
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario encontrado
+        '404':
+          description: Usuario no encontrado
+
+    put:
+      summary: Actualizar un usuario
+      tags:
+        - Usuarios
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre_completo:
+                  type: string
+                usuario:
+                  type: string
+                id_rol:
+                  type: integer
+      responses:
+        '200':
+          description: Usuario actualizado
+
+  /v1/usuarios/{id}/password:
+    put:
+      summary: Cambiar contraseña del usuario
+      tags:
+        - Usuarios
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nueva_contrasenia
+              properties:
+                nueva_contrasenia:
+                  type: string
+      responses:
+        '200':
+          description: Contraseña actualizada
