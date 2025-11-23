@@ -34,7 +34,7 @@ export const crearExpediente = async (req, res, next) => {
   } catch (error) {
     next(error);
    // console.error("Error crearExpediente:", error);
-    res.status(500).json({ message: "Error al crear expediente", error: error.message });
+   // res.status(500).json({ message: "Error al crear expediente", error: error.message });
   }
 };
 
@@ -61,7 +61,7 @@ export const cambiarEstado = async (req, res, next) => {
   } catch (error) {
     next(error);
     console.error("Error cambiarEstado:", error);
-    res.status(400).json({ message: error.message });
+    
   }
 };
 
@@ -86,7 +86,7 @@ export const obtenerExpediente = async (req, res, next) => {
   } catch (error) {
     next(error);
     console.error("Error obtenerExpediente:", error);
-    res.status(500).json({ message: "Error al obtener expediente", error: error.message });
+    
   }
 };
 
@@ -134,7 +134,7 @@ export const obtenerExpedientesPorUsuario = async (req, res, next) => {
     });
 
   } catch (error) {
-    console.log(11);
+    
     console.error("Error obtenerExpedientesPorUsuario:", error);
     next(error);
   }
