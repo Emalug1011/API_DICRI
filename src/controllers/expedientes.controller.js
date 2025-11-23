@@ -13,7 +13,7 @@ export const crearExpediente = async (req, res, next) => {
 
     const pool = await poolPromise;
 
-    const result = await pool.request()      
+    const result = await pool.request()
       .input("descripcion", sql.VarChar, descripcion)
       .input("id_usuario_tecnico", sql.Int, id_usuario)
       .output("nuevo_id", sql.Int)
@@ -33,8 +33,8 @@ export const crearExpediente = async (req, res, next) => {
 
   } catch (error) {
     next(error);
-   // console.error("Error crearExpediente:", error);
-   // res.status(500).json({ message: "Error al crear expediente", error: error.message });
+    // console.error("Error crearExpediente:", error);
+    // res.status(500).json({ message: "Error al crear expediente", error: error.message });
   }
 };
 
@@ -61,7 +61,7 @@ export const cambiarEstado = async (req, res, next) => {
   } catch (error) {
     next(error);
     console.error("Error cambiarEstado:", error);
-    
+
   }
 };
 
@@ -86,7 +86,7 @@ export const obtenerExpediente = async (req, res, next) => {
   } catch (error) {
     next(error);
     console.error("Error obtenerExpediente:", error);
-    
+
   }
 };
 
@@ -134,9 +134,58 @@ export const obtenerExpedientesPorUsuario = async (req, res, next) => {
     });
 
   } catch (error) {
-    
+
     console.error("Error obtenerExpedientesPorUsuario:", error);
     next(error);
   }
 };
 
+
+// ============================
+// Obtener Auditoría del Expediente
+// ============================
+export const obtenerAuditoriaExpediente = async (req, res, next) => {
+  try {
+    const id_expediente = parseInt(req.params.id);
+
+    const pool = await poolPromise;
+
+    const result = await pool.request()
+      .input("id_expediente", sql.Int, id_expediente)
+      .execute("SP_ObtenerAuditoriaExpediente");
+
+    return res.status(200).json({
+      message: "Auditoría del expediente",
+      auditoria: result.recordset
+    });
+
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+/* ============================================================
+   6. Resumen de expedientes por estado
+   ============================================================ */
+export const resumenEstados = async (req, res, next) => {
+  try {
+    const pool = await poolPromise;
+
+    const result = await pool.request()
+      .execute("SP_ResumenExpedientesPorEstado");
+    
+    writeLog("INFO", "Resumen de expedientes por estado consultado.", {
+      total_estados: result.recordset.length
+    });
+
+    return res.status(200).json({
+      message: "Resumen de expedientes por estado",
+      resumen: result.recordset
+    });
+
+  } catch (error) {
+    console.error("Error resumenEstados:", error);
+    return next(error);
+  }
+};
