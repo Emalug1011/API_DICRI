@@ -3,7 +3,8 @@ import {
   crearExpediente,
   cambiarEstado,
   obtenerExpediente,
-  listarExpedientes
+  listarExpedientes,
+  obtenerExpedientesPorUsuario
 } from "../controllers/expedientes.controller.js";
 
 import { crearIndicio } from "../controllers/indicios.controller.js";
@@ -14,6 +15,9 @@ const router = Router();
 // PROTEGER TODAS LAS RUTAS
 router.use(verificarToken);
 
+// Bandeja Usuario
+router.get("/mis-expedientes", obtenerExpedientesPorUsuario);
+
 // Expedientes
 router.post("/", crearExpediente);
 router.get("/", listarExpedientes);
@@ -22,5 +26,7 @@ router.put("/:id/estado", cambiarEstado);
 
 // Indicios dentro del expediente
 router.post("/:id/indicios", crearIndicio);
+
+
 
 export default router;

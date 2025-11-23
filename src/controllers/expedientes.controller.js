@@ -113,3 +113,30 @@ export const listarExpedientes = async (req, res, next) => {
     res.status(500).json({ message: "Error al consultar expedientes", error: error.message });
   }
 };
+
+/* ============================================================
+   5. Bandeja por usuario
+   ============================================================ */
+export const obtenerExpedientesPorUsuario = async (req, res, next) => {
+  try {
+    const id_usuario = req.usuario.id_usuario;
+    console.log(11);
+
+    const pool = await poolPromise;
+
+    const result = await pool.request()
+      .input("id_usuario", sql.Int, id_usuario)
+      .execute("SP_ObtenerExpedientesPorUsuario");
+
+    return res.status(200).json({
+      message: "Expedientes cargados correctamente",
+      expedientes: result.recordset
+    });
+
+  } catch (error) {
+    console.log(11);
+    console.error("Error obtenerExpedientesPorUsuario:", error);
+    next(error);
+  }
+};
+
