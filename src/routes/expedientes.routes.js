@@ -4,7 +4,8 @@ import {
   cambiarEstado,
   obtenerExpediente,
   listarExpedientes,
-  obtenerExpedientesPorUsuario
+  obtenerExpedientesPorUsuario,
+  obtenerAuditoriaExpediente
 } from "../controllers/expedientes.controller.js";
 
 import { crearIndicio } from "../controllers/indicios.controller.js";
@@ -23,6 +24,10 @@ router.post("/", crearExpediente);
 router.get("/", listarExpedientes);
 router.get("/:id", obtenerExpediente);
 router.put("/:id/estado", cambiarEstado);
+
+
+// Auditoría
+router.get("/:id/auditoria", obtenerAuditoriaExpediente);
 
 // Indicios dentro del expediente
 router.post("/:id/indicios", crearIndicio);

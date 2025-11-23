@@ -140,3 +140,26 @@ export const obtenerExpedientesPorUsuario = async (req, res, next) => {
   }
 };
 
+
+// ============================
+// Obtener Auditoría del Expediente
+// ============================
+export const obtenerAuditoriaExpediente = async (req, res, next) => {
+  try {
+    const id_expediente = parseInt(req.params.id);
+
+    const pool = await poolPromise;
+
+    const result = await pool.request()
+      .input("id_expediente", sql.Int, id_expediente)
+      .execute("SP_ObtenerAuditoriaExpediente");
+
+    return res.status(200).json({
+      message: "Auditoría del expediente",
+      auditoria: result.recordset
+    });
+
+  } catch (error) {
+    return next(error);
+  }
+};
