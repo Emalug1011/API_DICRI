@@ -13,11 +13,11 @@ export const crearExpediente = async (req, res, next) => {
 
     const pool = await poolPromise;
 
-    const result = await pool.request()
-      .input("codigo_expediente", sql.VarChar, codigo_expediente)
+    const result = await pool.request()      
       .input("descripcion", sql.VarChar, descripcion)
       .input("id_usuario_tecnico", sql.Int, id_usuario)
       .output("nuevo_id", sql.Int)
+      .output("codigo_generado", sql.VarChar)
       .execute("SP_CrearExpediente");
 
     writeLog("INFO", "Expediente creado exitosamente", {
@@ -27,6 +27,7 @@ export const crearExpediente = async (req, res, next) => {
 
     res.status(201).json({
       message: "Expediente creado",
+      codigo: result.output.codigo_generado,
       id_expediente: result.output.nuevo_id
     });
 
