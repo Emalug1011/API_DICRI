@@ -1,38 +1,44 @@
-version: '3.8'
+version: "3.9"
+
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
     container_name: sql2019_dicri
+    hostname: sql2019_dicri
     environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=Segura2025!
+      SA_PASSWORD: ${SA_PASSWORD}
+      ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
-    volumes:
-      - mssql-data:/var/opt/mssql
     networks:
       - dicri_net
+    volumes:
+      - ./db:/var/opt/mssql
 
   backend:
     build: .
     container_name: dicri_backend
+    ports:
+      - "3001:3001"
+    environment:
+      DB_SERVER: sql2019_dicri
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+
+      PORT: ${PORT}
+      JWT_SECRET: ${JWT_SECRET}
+
+      GOOGLE_APPLICATION_CREDENTIALS: "/app/src/config/google-service-account.json"
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+
     depends_on:
       - sqlserver
-    environment:
-      - DB_HOST=sqlserver
-      - DB_USER=sa
-      - DB_PASS=Segura2025!
-      - DB_NAME=bd_dicri_evidencias
-      - DB_PORT=1433
-      - JWT_SECRET=una_clave_secreta
-    ports:
-      - "3000:3000"
     networks:
       - dicri_net
-
-volumes:
-  mssql-data:
+    volumes:
+      - ./src/config/google-service-account.json:/app/src/config/google-service-account.json
 
 networks:
   dicri_net:
-    driver: bridge
+    name: dicri_net

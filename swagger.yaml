@@ -6,7 +6,7 @@ info:
   description: API para gestionar expedientes, indicios y flujos de aprobación.
 
 servers:
-  - url: http://localhost:3000/api
+  - url: http://localhost:3001/api
     description: Servidor local de desarrollo
 
 security:
@@ -34,15 +34,14 @@ paths:
             schema:
               type: object
               required:
-                - codigo_expediente
+                
                 - descripcion
               properties:
-                codigo_expediente:
-                  type: string
+ 
                 descripcion:
                   type: string
             example:
-              codigo_expediente: "DICRI-2025-0001"
+              
               descripcion: "Robo en local comercial"
       responses:
         '201':
@@ -73,6 +72,57 @@ paths:
       responses:
         '200':
           description: Lista de expedientes
+ 
+  /v1/expedientes/filter:
+    get:
+      summary: Listar expedientes con filtros
+      description: >
+        Permite consultar expedientes utilizando filtros opcionales como estado,
+        rango de fechas (fecha_inicio, fecha_fin) o ambos.
+      tags:
+        - Expedientes
+      parameters:
+        - in: query
+          name: estado
+          required: false
+          schema:
+            type: integer
+          description: >
+            Estado del expediente.
+        - in: query
+          name: fecha_inicio
+          required: false
+          schema:
+            type: string
+            format: date
+          example: "2025-01-01"
+          description: Fecha inicial del rango.
+        - in: query
+          name: fecha_fin
+          required: false
+          schema:
+            type: string
+            format: date
+          example: "2025-01-31"
+          description: Fecha final del rango.
+      responses:
+        '200':
+          description: Lista de expedientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+              example:
+                - id_expediente: 10
+                  codigo: "EXP-2025-0001"
+                  estado: "En Revisión"
+                - id_expediente: 11
+                  codigo: "EXP-2025-0002"
+                  estado: "Registrado"
+        '500':
+          description: Error interno  
 
   /v1/expedientes/{id}:
     get:
@@ -127,28 +177,140 @@ paths:
         '400':
           description: Flujo no permitido o falta justificación
 
-  # ================= INDICIOS =================
-
-  /v1/expedientes/{id}/indicios:
-    post:
-      summary: Agregar indicio a un expediente
+  /v1/expedientes/mis-expedientes:
+    get:
+      summary: Obtener expedientes asignados al usuario autenticado
+      description: >
+        Devuelve los expedientes según el rol del usuario:
+        - Técnico → Estados 1 (Registrado) y 4 (Rechazado)
+        - Coordinador → Estado 2 (En Revisión)
+        - Administrador → Todos los expedientes
       tags:
-        - Indicios
+        - Expedientes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de expedientes asignados al usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  expedientes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id_expediente:
+                          type: integer
+                        codigo_expediente:
+                          type: string
+                        descripcion:
+                          type: string
+                        id_estado:
+                          type: integer
+                        nombre_estado:
+                          type: string
+                        fecha_registro:
+                          type: string
+                        id_usuario_tecnico:
+                          type: integer
+        '401':
+          description: Token inválido o no enviado
+
+  /v1/expedientes/{id}/auditoria:
+    get:
+      summary: Obtener la auditoría del expediente
+      tags:
+        - Expedientes
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: integer
-          description: Id del expediente al que pertenece el indicio
+          description: ID del expediente
+      responses:
+        '200':
+          description: Auditoría del expediente
+        '404':
+          description: No encontrado
+
+  /v1/expedientes/resumen-estados:
+    get:
+      tags:
+        - Expedientes
+      summary: Resumen de expedientes por estado
+      description: |
+        Devuelve la cantidad total de expedientes agrupados por estado.
+        Los estados activos provienen de la tabla `TC_EstadoExpediente`  
+        y se cuentan los expedientes asociados desde `TT_Expediente`.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Resumen de expedientes por estado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Resumen de expedientes por estado
+                  resumen:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id_estado:
+                          type: integer
+                          example: 1
+                        nombre_estado:
+                          type: string
+                          example: Creado
+                        total_expedientes:
+                          type: integer
+                          example: 10
+        '401':
+          description: Token inválido o no enviado.
+        '500':
+          description: Error interno del servidor.
+  # ================= INDICIOS =================
+
+  /v1/expedientes/{id}/indicios:
+    get:
+      summary: Obtener indicios activos de un expediente
+      tags: [Indicios]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de indicios
+
+    post:
+      summary: Crear indicio para un expediente
+      tags: [Indicios]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - descripcion
+              required: [descripcion]
               properties:
                 descripcion:
                   type: string
@@ -160,15 +322,35 @@ paths:
                   type: string
                 ubicacion:
                   type: string
-            example:
-              descripcion: "Cuchillo con manchas"
-              color: "Plateado"
-              tamano: "20cm"
-              peso: "200g"
-              ubicacion: "Escena del crimen - cocina"
       responses:
         '201':
           description: Indicio creado
+
+
+  /v1/indicios/{id}/estado:
+    put:
+      summary: Actualizar estado del indicio
+      tags: [Indicios]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado:
+                  type: integer
+                  enum: [0, 1]
+      responses:
+        '200':
+          description: Estado actualizado
 
   # ================= AUTENTICACIÓN =================
 
