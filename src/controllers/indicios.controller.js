@@ -36,8 +36,64 @@ export const crearIndicio = async (req, res, next) => {
       id_indicio: result.output.nuevo_id
     });
 
-  } catch (error) {    
+  } catch (error) {
     //console.error("Error crearIndicio:", error);
-    return next(error); 
+    return next(error);
   }
 };
+
+export const obtenerIndiciosPorExpediente = async (req, res, next) => {
+  try {
+    const id_expediente = parseInt(req.params.id);
+
+    const pool = await poolPromise;
+
+    const result = await pool.request()
+      .input("id_expediente", sql.Int, id_expediente)
+      .execute("SP_ObtenerIndiciosPorExpediente");
+
+    writeLog("INFO", "Indicios consultados", {
+      id_expediente,
+      total: result.recordset.length
+    });
+
+    return res.status(200).json({
+      message: "Lista de indicios",
+      indicios: result.recordset
+    });
+
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+export const actualizarEstadoIndicio = async (req, res, next) => {
+  try {
+    const id_indicio = parseInt(req.params.id);
+    const { estado } = req.body;  // 1 = activo, 0 = inactivo
+
+    const pool = await poolPromise;
+
+    await pool.request()
+      .input("id_indicio", sql.Int, id_indicio)
+      .input("estado", sql.Int, estado)
+      .execute("SP_ActualizarEstadoIndicio");
+
+    writeLog("INFO", "Estado actualizado de indicio", {
+      id_indicio,
+      nuevo_estado: estado
+    });
+
+    return res.status(200).json({
+      message: "Estado del indicio actualizado",
+      id_indicio,
+      estado
+    });
+
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
